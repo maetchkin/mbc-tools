@@ -5,9 +5,14 @@ var cli     = require("./cli"),
     emitter = new events.EventEmitter(),
     output  = function(err, data){
         if (err) {
-            cli.error( '\x1B[1;31m' + "Compilation " + options.src + " failed!" + '\x1B[0m' );
-            cli.fatal( err );
-            process.exit(1);
+
+            if( err.fatal ) {
+                cli.fatal( err );
+                process.exit(1);
+            } else {
+                cli.error( err );
+            }
+
         } else {
             console.log( data );
             process.exit(0);
@@ -28,37 +33,48 @@ var options = cli.parse(
         );
 
 var parser = function( data, options, output ){
-    var sax = require("sax").parser( true, { xmlns:true, position:true }),
 
-            compiler = {
+    var sax = require("sax")
+                .parser( true, { xmlns:true, position:true }),
 
-                output : output,
+                compiler = {
 
-                ns: {},
+                    output : output,
 
-                "on" : function(){
-                    return emitter.on.apply(emitter, arguments);
-                },
+                    ns: {},
 
-                "load" : function( ns ){
-                    for (var n in ns){
-                        this.ns[n] = require( ns[n] );
-                        this.ns[n] = this.ns[n].call( this );
+                    "on" : function(){
+                        return emitter.on.apply(emitter, arguments);
+                    },
+
+                    "load" : function( ns ){
+                        var n;
+                        for (n in ns){
+
+                            console.log("ns",n);
+
+                            this.ns[n] = require( ns[n] );
+
+                            this.ns[n] = this.ns[n].call(
+                                this,
+                                (function( n ){
+                                    var n = n;
+                                    return function( err ){
+                                        return output("\x1B[35m" + "sax.ns.compiler: \x1B[33m" + n + '\x1B[31m ' + err + '\x1B[0m');
+                                    }
+                                })( n+"" )
+                            );
+                        }
                     }
                 },
 
-                "err" : function( err ){
-                    return output("\x1B[35m" + "sax.view.compiler: " + '\x1B[31m'+err+'\x1B[0m:');
-                }
-            },
-
-            err = function (err) {
-                return output( '\x1B[34m'+ "sax.parser: " +'\x1B[0m' + '\x1B[31m'+err+'\x1B[0m' );
-            };
+                err = function ( err ) {
+                    return output( '\x1B[34m'+ "sax.ns.parser: " + '\x1B[31m'+err+'\x1B[0m' );
+                };
 
     compiler.load( options.ns );
     //console.log('\x1B[34m'+"-----------------compiler-----------------\n"+'\x1B[0m', compiler);
-    
+
     /* return;*/
 
     sax.onerror   = err;

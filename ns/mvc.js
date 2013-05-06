@@ -1,24 +1,29 @@
-module.exports = function(){
+module.exports = function(err){
     var compiler = this;
     return {
         "*" : function( node ){
-            console.log( '\x1B[0;31m' + "undefined method for" + '\x1B[0m' , node );
+            //console.log(node);
+            err( 'not contain open method for ' + node.name );
+            //console.log("", node);
         },
         "/*": function( node ){
-            
+            err( 'not contain close method for ' + node.name );
         },
         "template": function( node ){
+
             if (compiler.point !== null) {
-                compiler.err( "Template format violation: mvc:template must be child of mvc:templates" );
+                err( "Template format violation: mvc:template must be child of mvc:templates" );
             }
 
-            var mtpl = {
+            //console.log("=====",node);
+
+            /*var mtpl = {
                 name: ($(node).attr('name') || 'default'),
                 content:[],
                 parent : compiler.point
             };
 
-            compiler.point = compiler.result.storage[ mtpl.name ] = mtpl;
+            compiler.point = compiler.result.storage[ mtpl.name ] = mtpl;*/
         },
         "/template": function(){
             compiler.point = null;

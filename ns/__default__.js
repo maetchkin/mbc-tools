@@ -54,9 +54,9 @@ var clean = function( str ){
                 __default__ = "__default__";
 
             if ( typeof _n === "string" ) {
-                n = _n.indexOf(":") == -1 ? [ __default__ , _n ] : _n.split(":");
+                n = _n.indexOf(":") == -1 ? [ __default__ , _n.local ] : _n.split(":");
             } else if ( typeof _n === "object" ) {
-                n = [_n.prefix,_n.name];
+                n = [_n.prefix,_n.local];
             } else {
                 this.err("unexpected value " + _n);
             }
@@ -71,7 +71,7 @@ var clean = function( str ){
         return _$;
     };
 
-module.exports = function( ){
+module.exports = function( err ){
 
     var compiler = this;
 
@@ -84,37 +84,39 @@ module.exports = function( ){
     };
 
 
-    compiler.on(
+compiler.on(
         "open",
         function( node ){
 
             var ns  = $( node ).ns(),
                 ns_ = ns[0],
                 _ns = ns[1];
+            console.log("[ns]",ns)
             if ( ns_ in compiler.ns ) {
                 if ( ! (_ns in compiler.ns[ ns_ ]) ) {
                     _ns = "*";
                 }
                 compiler.ns[ ns_ ][ _ns ]( node );
             } else {
-                return err( "not defined ns for \"" + node.name + "\". check grammars" );
+                return err( "00not defined open-method ns for \"" + ns_ +":"+ _ns + "----"+node.name + "\". check grammars" );
             }
         }
     );
     /*this.on("text", l);*/
 
-compiler        "close",
+compiler.on(
+        "close",
         function( node ){
-            var ns = $( node ).ns();
-            console.log(">ns ",ns);
-            if ( node.substr( 0, node.indexOf(":") ) in options.ns ) {
-                if ( ("/"+node) in compiler ) {
-                    compiler[  "/"+node ]( node );
-                } else {
-                    return err("not defined method for \"/" + node + "\"");
+            var ns = $( node ).ns(),
+                ns_ = ns[0],
+                _ns = ns[1];
+            if ( ns_ in compiler.ns ) {
+                if ( ! (_ns in compiler.ns[ ns_ ]) ) {
+                    _ns = "/*";
                 }
+                compiler.ns[ ns_ ][ _ns ]( compiler.point );
             } else {
-                compiler["/*"]( node );
+                return err( "00not defined close-method ns for \"" + ns_ +":"+ _ns + "\". check grammars" );
             }
         }
     );
@@ -148,10 +150,10 @@ compiler        "close",
                 name    : node.name,
                 attrs   : $(node).attrs(),
                 content : [],
-                parent  : this.point
+                parent  : compiler.point
             };
-            this.slot().push( tag );
-            this.point = tag;
+            compiler.slot().push( tag );
+            compiler.point = tag;
         },
         "/*": function( node ){
             //console.log( "/:*", node );
