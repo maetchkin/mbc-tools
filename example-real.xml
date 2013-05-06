@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mvc:templates xmlns:mvc="http://market.yandex.ru/mvc#ModelViewController" xmlns:i18n="http://yandex.ru/#i18n">
+
+<mvc:template name="tasks-progress">
+    <ul class="tasks-progress__list">
+        <mvc:apply-templates name="tasks-progress__list-item" tag="li" class="disabled"/>
+    </ul>
+</mvc:template>
+
+<mvc:template name="tasks-progress__list-item">
+    <li class="tasks-progress__list-item">
+        <mvc:call-template name="tasks-progress__list-item-head" tag="div"/>
+        <mvc:call-template view="progress" tag="div"/>
+        <mvc:call-template name="tasks-progress__list-item-status-message" tag="div"/>
+        <mvc:prop>tasks-progress__show-results</mvc:prop>
+        <div class="results-container"><mvc:text>results-container</mvc:text></div>
+    </li>
+</mvc:template>
+
+<mvc:template name="user-link">
+    <a target="_blank" class="user-login-link" href="http://localhost/{mvc:prop.owner}">
+        <b class="b-user">
+            <i18n:node a="attr">
+            eee
+            </i18n:node>
+            <mvc:prop>owner</mvc:prop>
+        </b>
+    </a>
+</mvc:template>
+
+<mvc:template name="tasks-progress__list-item-head">
+<span>
+    <a target="_blank" href="http://localhost/{mvc:prop.pid}">
+        <mvc:text>Task #</mvc:text>
+        <mvc:prop>pid</mvc:prop>
+    </a>
+    <mvc:call-template name="user-link" tag="span"/>
+    <mvc:text> </mvc:text>
+    <mvc:prop>description</mvc:prop>
+</span>
+</mvc:template>
+
+
+<mvc:template name="tasks-progress__list-item-status-message">
+    <span>
+        <span class="status-message">
+            <mvc:prop>status-message</mvc:prop>
+        </span>
+        <mvc:text> </mvc:text>
+        <mvc:call-template name="b-button" view="controls" class="b-control-slot">
+            <mvc:param name="action">show-results</mvc:param>
+            <mvc:param name="label" select="results"/>
+        </mvc:call-template>
+    </span>
+</mvc:template>
+
+</mvc:templates>
